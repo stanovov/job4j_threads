@@ -3,11 +3,11 @@ package ru.job4j;
 public class Count {
     private int value;
 
-    public void increment() {
+    public synchronized void increment() {
         value++;
     }
 
-    public int get() {
+    public synchronized int get() {
         return value;
     }
 }
