@@ -12,6 +12,11 @@ public class UserStorage {
     @GuardedBy("this")
     private final List<User> userList = new ArrayList<>();
 
+    public synchronized User findById(int id) {
+        int index = indexOf(id);
+        return (index == -1) ? null : userList.get(index);
+    }
+
     public synchronized boolean add(User user) {
         return userList.add(user);
     }
