@@ -4,9 +4,17 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
 
 public class Wget implements Runnable {
+
+    private static final String PROMPT = "Use correct arguments: \n"
+                                        + "-url -speed -folder_path";
 
     private final String url;
 
@@ -19,9 +27,41 @@ public class Wget implements Runnable {
     }
 
     public Wget(String url, int speed, String folder) {
+        validate(url, speed, folder);
         this.url = url;
         this.speed = speed;
         this.folder = folder;
+    }
+
+    private void validate(String url, int speed, String folder) {
+        if (!isValidURL(url)) {
+            throw new IllegalArgumentException("Invalid URL.\n" + PROMPT);
+        }
+        if (speed <= 0) {
+            throw new IllegalArgumentException("Invalid speed, should be positive.\n" + PROMPT);
+        }
+        if (!isValidPath(folder)) {
+            throw new IllegalArgumentException("Invalid folder path.\n" + PROMPT);
+        }
+    }
+
+    private boolean isValidPath(String folder) {
+        Path p;
+        try {
+            p = Path.of(folder);
+        } catch (InvalidPathException e) {
+            return false;
+        }
+        return Files.isDirectory(p);
+    }
+
+    private boolean isValidURL(String url) {
+        try {
+            new URL(url).openStream().close();
+        } catch (IOException e) {
+            return false;
+        }
+        return true;
     }
 
     @Override
@@ -53,8 +93,16 @@ public class Wget implements Runnable {
     }
 
     public static void main(String[] args) throws InterruptedException {
+        if (args.length != 3) {
+            throw new IllegalArgumentException("Incorrect number of parameters.\n" + PROMPT);
+        }
         String url = args[0];
-        int speed = Integer.parseInt(args[1]);
+        int speed;
+        try {
+            speed = Integer.parseInt(args[1]);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Second argument must be a integer.\n" + PROMPT);
+        }
         String folder = args[2];
         Thread wget = new Thread(new Wget(url, speed, folder));
         wget.start();
