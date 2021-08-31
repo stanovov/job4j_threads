@@ -46,33 +46,4 @@ public class SimpleBlockingQueue<T> {
         }
         return queue.poll();
     }
-
-    public static void main(String[] args) throws InterruptedException {
-        SimpleBlockingQueue<Integer> queue = new SimpleBlockingQueue<>(5);
-        Thread first = new Thread(() -> {
-            System.out.println(queue.poll());
-            System.out.println(queue.poll());
-            System.out.println("FIRST");
-        });
-        first.start();
-        TimeUnit.SECONDS.sleep(2);
-        Thread second = new Thread(() -> {
-            System.out.println("Second started");
-            queue.offer(666);
-        });
-        second.start();
-        TimeUnit.SECONDS.sleep(2);
-        Thread fifth = new Thread(() -> {
-            System.out.println(queue.poll());
-            System.out.println("FIFTH");
-        });
-        TimeUnit.SECONDS.sleep(2);
-        fifth.start();
-        Thread third = new Thread(() -> {
-            System.out.println("Third started");
-            queue.offer(777);
-            queue.offer(888);
-        });
-        third.start();
-    }
 }
