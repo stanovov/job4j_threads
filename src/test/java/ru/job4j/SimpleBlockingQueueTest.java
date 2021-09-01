@@ -3,7 +3,6 @@ package ru.job4j;
 import org.junit.Test;
 
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
@@ -17,7 +16,7 @@ public class SimpleBlockingQueueTest {
     @Test
     public void whenFirstAddToQueueThenRetrieve() throws InterruptedException {
         SimpleBlockingQueue<Integer> queue = new SimpleBlockingQueue<>(5);
-        List<Integer> result = new ArrayList<>();
+        final CopyOnWriteArrayList<Integer> buffer = new CopyOnWriteArrayList<>();
         Thread producer = new Thread(
                 () -> {
                     queue.offer(1);
@@ -29,30 +28,28 @@ public class SimpleBlockingQueueTest {
         );
         Thread consumer = new Thread(
                 () -> {
-                    try {
-                        result.add(queue.poll());
-                        result.add(queue.poll());
-                        result.add(queue.poll());
-                        result.add(queue.poll());
-                        result.add(queue.poll());
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                        Thread.currentThread().interrupt();
+                    while (!queue.isEmpty() || !Thread.currentThread().isInterrupted()) {
+                        try {
+                            buffer.add(queue.poll());
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                        }
                     }
                 }
         );
         producer.start();
         consumer.start();
         producer.join();
+        consumer.interrupt();
         consumer.join();
         List<Integer> expected = List.of(1, 2, 3, 4, 5);
-        assertThat(result, is(expected));
+        assertThat(buffer, is(expected));
     }
 
     @Test
     public void whenAddAndCollectWithDelay() throws InterruptedException {
-        SimpleBlockingQueue<Integer> queue = new SimpleBlockingQueue<>(3);
-        List<Integer> result = new ArrayList<>();
+        final SimpleBlockingQueue<Integer> queue = new SimpleBlockingQueue<>(3);
+        final CopyOnWriteArrayList<Integer> buffer = new CopyOnWriteArrayList<>();
         Thread producer = new Thread(
                 () -> {
                     try {
@@ -66,22 +63,24 @@ public class SimpleBlockingQueueTest {
         );
         Thread consumer = new Thread(
                 () -> {
-                    try {
-                        TimeUnit.MILLISECONDS.sleep(150);
-                        for (int i = 1; i <= 5; i++) {
-                            result.add(queue.poll());
+                    while (!queue.isEmpty() || !Thread.currentThread().isInterrupted()) {
+                        try {
+                            buffer.add(queue.poll());
                             TimeUnit.MILLISECONDS.sleep(250);
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
                         }
-                    } catch (InterruptedException ignored) {
                     }
                 }
         );
         producer.start();
+        TimeUnit.MILLISECONDS.sleep(150);
         consumer.start();
         producer.join();
+        consumer.interrupt();
         consumer.join();
         List<Integer> expected = List.of(1, 2, 3, 4, 5);
-        assertThat(result, is(expected));
+        assertThat(buffer, is(expected));
     }
 
     @Test
@@ -102,7 +101,6 @@ public class SimpleBlockingQueueTest {
                         try {
                             buffer.add(queue.poll());
                         } catch (InterruptedException e) {
-                            e.printStackTrace();
                             Thread.currentThread().interrupt();
                         }
                     }
