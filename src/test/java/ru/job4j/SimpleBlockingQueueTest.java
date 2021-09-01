@@ -19,11 +19,15 @@ public class SimpleBlockingQueueTest {
         final CopyOnWriteArrayList<Integer> buffer = new CopyOnWriteArrayList<>();
         Thread producer = new Thread(
                 () -> {
-                    queue.offer(1);
-                    queue.offer(2);
-                    queue.offer(3);
-                    queue.offer(4);
-                    queue.offer(5);
+                    try {
+                        queue.offer(1);
+                        queue.offer(2);
+                        queue.offer(3);
+                        queue.offer(4);
+                        queue.offer(5);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
                 }
         );
         Thread consumer = new Thread(
@@ -88,11 +92,13 @@ public class SimpleBlockingQueueTest {
         final CopyOnWriteArrayList<Integer> buffer = new CopyOnWriteArrayList<>();
         final SimpleBlockingQueue<Integer> queue = new SimpleBlockingQueue<>(3);
         Thread producer = new Thread(
-                () -> {
-                    IntStream.range(0, 5).forEach(
-                            queue::offer
-                    );
-                }
+                () -> IntStream.range(0, 5).forEach(i -> {
+                        try {
+                            queue.offer(i);
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                        }
+                })
         );
         producer.start();
         Thread consumer = new Thread(
