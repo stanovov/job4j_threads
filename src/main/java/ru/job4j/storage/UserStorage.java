@@ -3,50 +3,49 @@ package ru.job4j.storage;
 import net.jcip.annotations.GuardedBy;
 import net.jcip.annotations.ThreadSafe;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 @ThreadSafe
 public class UserStorage {
 
     @GuardedBy("this")
-    private final List<User> userList = new ArrayList<>();
+    private final Map<Integer, User> storage = new HashMap<>();
 
     public synchronized User findById(int id) {
-        int index = indexOf(id);
-        return (index == -1) ? null : userList.get(index);
+        return storage.get(id);
     }
 
     public synchronized boolean add(User user) {
-        return userList.add(user);
+        return storage.put(user.getId(), user) != null;
     }
 
     public synchronized boolean update(User user) {
-        int id = indexOf(user.getId());
-        boolean result = id != -1;
+        int id = user.getId();
+        boolean result = storage.containsKey(id);
         if (result) {
-            userList.set(id, user);
+            storage.put(user.getId(), user);
         }
         return result;
     }
 
     public synchronized boolean delete(User user) {
-        return userList.remove(user);
+        return storage.remove(user.getId()) != null;
     }
 
     public synchronized boolean transfer(int fromId, int toId, int amount) {
         boolean result = false;
-        int indexFromId = indexOf(fromId);
-        int indexToId = indexOf(toId);
-        if (indexFromId == -1 || indexToId == -1) {
-            if (indexFromId == -1 && indexToId == -1) {
+        boolean fromFound = storage.containsKey(fromId);
+        boolean toFound = storage.containsKey(toId);
+        if (!fromFound || !toFound) {
+            if (!fromFound && !toFound) {
                 System.out.println("No accounts found!");
             } else {
-                System.out.println("Account with id \"" + ((indexFromId == -1) ? fromId : toId) + "\" not found");
+                System.out.println("Account with id \"" + (!fromFound ? fromId : toId) + "\" not found");
             }
         } else {
-            User fromUser = userList.get(indexFromId);
-            User toUser = userList.get(indexToId);
+            User fromUser = storage.get(fromId);
+            User toUser = storage.get(toId);
             result = fromUser.getAmount() >= amount;
             if (!result) {
                 System.out.println("Insufficient funds for transfer");
@@ -56,16 +55,5 @@ public class UserStorage {
             }
         }
         return result;
-    }
-
-    private synchronized int indexOf(int id) {
-        int rsl = -1;
-        for (int index = 0; index < userList.size(); index++) {
-            if (userList.get(index).getId() == id) {
-                rsl = index;
-                break;
-            }
-        }
-        return rsl;
     }
 }
