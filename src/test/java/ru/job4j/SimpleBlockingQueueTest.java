@@ -27,11 +27,16 @@ public class SimpleBlockingQueueTest {
         );
         Thread consumer = new Thread(
                 () -> {
-                    result.add(queue.poll());
-                    result.add(queue.poll());
-                    result.add(queue.poll());
-                    result.add(queue.poll());
-                    result.add(queue.poll());
+                    try {
+                        result.add(queue.poll());
+                        result.add(queue.poll());
+                        result.add(queue.poll());
+                        result.add(queue.poll());
+                        result.add(queue.poll());
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                        Thread.currentThread().interrupt();
+                    }
                 }
         );
         producer.start();

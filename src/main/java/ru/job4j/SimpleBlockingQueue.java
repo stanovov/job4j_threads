@@ -5,7 +5,6 @@ import net.jcip.annotations.ThreadSafe;
 
 import java.util.LinkedList;
 import java.util.Queue;
-import java.util.concurrent.TimeUnit;
 
 @ThreadSafe
 public class SimpleBlockingQueue<T> {
@@ -33,13 +32,9 @@ public class SimpleBlockingQueue<T> {
         queue.offer(value);
     }
 
-    public synchronized T poll() {
+    public synchronized T poll() throws InterruptedException {
         if (queue.size() == 0) {
-            try {
-                wait();
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
+            wait();
         }
         if (queue.size() == limit) {
             notifyAll();
