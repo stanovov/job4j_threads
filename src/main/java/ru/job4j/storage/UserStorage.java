@@ -29,30 +29,15 @@ public class UserStorage {
     }
 
     public synchronized boolean transfer(int fromId, int toId, int amount) {
-        boolean result = false;
         User from = storage.get(fromId);
         User to = storage.get(toId);
-        if (from == null && to == null) {
-            System.out.println("No accounts found!");
-        } else if (from == null || to == null) {
-            System.out.println("Account with id \"" + (from == null ? fromId : toId) + "\" not found");
-        } else if (from.getAmount() < amount) {
-            System.out.println("Insufficient funds for transfer");
+        boolean result = from != null && to != null && from.getAmount() >= amount;
+        if (!result) {
+            System.out.println("Operation is not possible!");
         } else {
             update(new User(fromId, from.getAmount() - amount));
             update(new User(toId, to.getAmount() + amount));
-            result = true;
         }
         return result;
-    }
-
-    public static void main(String[] args) {
-        UserStorage storage = new UserStorage();
-        System.out.println(storage.add(new User(1, 0)));
-        System.out.println(storage.findById(1));
-        System.out.println(storage.update(new User(1, 25)));
-        System.out.println(storage.findById(1));
-        System.out.println(storage.delete(new User(1, 25)));
-        System.out.println(storage.findById(1));
     }
 }
