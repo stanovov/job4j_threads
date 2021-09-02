@@ -25,7 +25,7 @@ public class UserStorage {
     }
 
     public synchronized boolean delete(User user) {
-        return storage.remove(user.getId()) != null;
+        return storage.remove(user.getId(), user);
     }
 
     public synchronized boolean transfer(int fromId, int toId, int amount) {
@@ -44,5 +44,15 @@ public class UserStorage {
             result = true;
         }
         return result;
+    }
+
+    public static void main(String[] args) {
+        UserStorage storage = new UserStorage();
+        System.out.println(storage.add(new User(1, 0)));
+        System.out.println(storage.findById(1));
+        System.out.println(storage.update(new User(1, 25)));
+        System.out.println(storage.findById(1));
+        System.out.println(storage.delete(new User(1, 25)));
+        System.out.println(storage.findById(1));
     }
 }
