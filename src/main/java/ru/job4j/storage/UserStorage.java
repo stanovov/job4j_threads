@@ -17,16 +17,11 @@ public class UserStorage {
     }
 
     public synchronized boolean add(User user) {
-        return storage.put(user.getId(), user) != null;
+        return storage.putIfAbsent(user.getId(), user) == null;
     }
 
     public synchronized boolean update(User user) {
-        int id = user.getId();
-        boolean result = storage.containsKey(id);
-        if (result) {
-            storage.put(user.getId(), user);
-        }
-        return result;
+        return storage.computeIfPresent(user.getId(), (k, v) -> user) != null;
     }
 
     public synchronized boolean delete(User user) {
@@ -35,24 +30,18 @@ public class UserStorage {
 
     public synchronized boolean transfer(int fromId, int toId, int amount) {
         boolean result = false;
-        boolean fromFound = storage.containsKey(fromId);
-        boolean toFound = storage.containsKey(toId);
-        if (!fromFound || !toFound) {
-            if (!fromFound && !toFound) {
-                System.out.println("No accounts found!");
-            } else {
-                System.out.println("Account with id \"" + (!fromFound ? fromId : toId) + "\" not found");
-            }
+        User from = storage.get(fromId);
+        User to = storage.get(toId);
+        if (from == null && to == null) {
+            System.out.println("No accounts found!");
+        } else if (from == null || to == null) {
+            System.out.println("Account with id \"" + (from == null ? fromId : toId) + "\" not found");
+        } else if (from.getAmount() < amount) {
+            System.out.println("Insufficient funds for transfer");
         } else {
-            User fromUser = storage.get(fromId);
-            User toUser = storage.get(toId);
-            result = fromUser.getAmount() >= amount;
-            if (!result) {
-                System.out.println("Insufficient funds for transfer");
-            } else {
-                update(new User(fromId, fromUser.getAmount() - amount));
-                update(new User(toId, toUser.getAmount() + amount));
-            }
+            update(new User(fromId, from.getAmount() - amount));
+            update(new User(toId, to.getAmount() + amount));
+            result = true;
         }
         return result;
     }
