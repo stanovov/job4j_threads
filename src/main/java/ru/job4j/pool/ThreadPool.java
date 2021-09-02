@@ -12,8 +12,6 @@ public class ThreadPool {
 
     private final SimpleBlockingQueue<Runnable> tasks = new SimpleBlockingQueue<>(5);
 
-    private boolean shutdown;
-
     private class InnerThread extends Thread {
         @Override
         public void run() {
@@ -37,14 +35,10 @@ public class ThreadPool {
     }
 
     public void work(Runnable job) throws InterruptedException {
-        if (shutdown) {
-            throw new RuntimeException("Thread pool completed");
-        }
         tasks.offer(job);
     }
 
     public void shutdown() {
-        shutdown = true;
         threads.forEach(Thread::interrupt);
     }
 }
