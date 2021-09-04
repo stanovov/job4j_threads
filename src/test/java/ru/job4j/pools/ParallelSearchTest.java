@@ -152,6 +152,5 @@ public class ParallelSearchTest {
         int result = ParallelSearch.search(arr, null);
         int excepted = 6;
         assertThat(result, is(excepted));
-
     }
 }
