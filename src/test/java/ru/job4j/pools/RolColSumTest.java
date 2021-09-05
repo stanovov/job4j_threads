@@ -9,27 +9,6 @@ import static org.junit.Assert.*;
 
 public class RolColSumTest {
 
-    @Test(expected = IllegalArgumentException.class)
-    public void whenMatrixEmpty() {
-        int[][] matrix = {};
-        RolColSum.sum(matrix);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void whenRowInsideMatrixIsMust() {
-        int[][] matrix = {{}};
-        RolColSum.sum(matrix);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void whenMatrixIsUneven() {
-        int[][] matrix = {
-                {1},
-                {2, 3}
-        };
-        RolColSum.sum(matrix);
-    }
-
     @Test
     public void whenCalculatedSequentiallyAndSquareMatrix() {
         int[][] matrix = {
