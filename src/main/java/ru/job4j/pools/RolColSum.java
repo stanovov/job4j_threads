@@ -46,42 +46,36 @@ public class RolColSum {
     }
 
     public static Sums[] sum(int[][] matrix) {
-        int size = Math.max(matrix.length, matrix[0].length);
-        final Sums[] sums = new Sums[size];
+        final Sums[] sums = new Sums[matrix.length];
         for (int i = 0; i < sums.length; i++) {
-            sums[i] = getSums(matrix, i, size);
+            sums[i] = getSums(matrix, i);
         }
         return sums;
     }
 
     public static Sums[] asyncSum(int[][] matrix) throws ExecutionException, InterruptedException {
-        final int size = Math.max(matrix.length, matrix[0].length);
         Map<Integer, CompletableFuture<Sums>> futures = new HashMap<>();
-        for (int i = 0; i < size; i++) {
-            futures.put(i, getTask(matrix, i, size));
+        for (int i = 0; i < matrix.length; i++) {
+            futures.put(i, getTask(matrix, i));
         }
-        final Sums[] sums = new Sums[size];
+        final Sums[] sums = new Sums[matrix.length];
         for (Integer key : futures.keySet()) {
             sums[key] = futures.get(key).get();
         }
         return sums;
     }
 
-    private static Sums getSums(int[][] matrix, int i, int size) {
+    private static Sums getSums(int[][] matrix, int i) {
         int rowSum = 0;
         int colSum = 0;
-        for (int j = 0; j < size; j++) {
-            if (j < matrix.length && i < matrix[j].length) {
-                colSum += matrix[j][i];
-            }
-            if (i < matrix.length && j < matrix[i].length) {
-                rowSum += matrix[i][j];
-            }
+        for (int j = 0; j < matrix.length; j++) {
+            colSum += matrix[j][i];
+            rowSum += matrix[i][j];
         }
         return new Sums(rowSum, colSum);
     }
 
-    private static CompletableFuture<Sums> getTask(int[][] matrix, int i, int size) {
-        return CompletableFuture.supplyAsync(() -> getSums(matrix, i, size));
+    private static CompletableFuture<Sums> getTask(int[][] matrix, int i) {
+        return CompletableFuture.supplyAsync(() -> getSums(matrix, i));
     }
 }
