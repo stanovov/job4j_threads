@@ -2,3 +2,5 @@
 [![codecov](https://codecov.io/gh/stanovov/job4j_threads/branch/master/graph/badge.svg?token=EJRG7N2B3X)](https://codecov.io/gh/stanovov/job4j_threads)
 
 Объединение зафиксированных изменений
+
+В курсе производилась работа с веткамы git
